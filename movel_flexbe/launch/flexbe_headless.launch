@@ -2,7 +2,7 @@
 <launch>
 
   <group ns="seirios_api">
-    <rosparam command="load" file="$(find movel_flexbe)/config/seiriosapi.yaml" />
+    <rosparam command="load" file="$(find movel_flexbe)/config/seirios_api.yaml" />
   </group>
 
   <include file="$(find flexbe_onboard)/launch/behavior_onboard.launch"/>

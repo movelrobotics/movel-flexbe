@@ -1,0 +1,23 @@
+<package>
+  <name>movel_flexbe_states</name>
+  <version>1.0.0</version>
+  <description>
+     movel_flexbe_states contains a collection of states developed and used for Movel AI robot software.
+  </description>
+  <maintainer email="todo@todo.com">TODO</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>rospy</run_depend>
+
+  <run_depend>flexbe_core</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>rospy_msgs</run_depend>
+  <run_depend>movel_seirios_msgs</run_depend>
+
+  <export>
+    <flexbe_states />
+  </export>
+
+</package>

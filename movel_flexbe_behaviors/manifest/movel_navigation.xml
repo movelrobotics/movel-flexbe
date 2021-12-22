@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="movel_navigation">
+
+	<executable package_path="movel_flexbe_behaviors.movel_navigation_sm" class="movel_navigationSM" />
+	<tagstring></tagstring>
+	<author>Movel AI</author>
+	<date>Fri Dec 03 2021</date>
+	<description>
+		movel_navigation
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+	<params>
+
+		<param type="text" name="goal_name" default="" label="goal_name" hint="Sets the goal_name" />
+
+		<param type="numeric" name="linear_velocity" default="0.2" label="linear_velocity" hint="Sets the linear_velocity">
+			<min value="0" />
+			<max value="1.0" />
+		</param>
+
+		<param type="numeric" name="angular_velocity" default="0.2" label="angular_velocity" hint="Sets the angular_velocity">
+			<min value="0" />
+			<max value="1" />
+		</param>
+
+	</params>
+
+
+</behavior>

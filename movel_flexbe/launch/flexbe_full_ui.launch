@@ -14,4 +14,6 @@
 
   <include file="$(find flexbe_onboard)/launch/behavior_onboard.launch" />
 
+  <node pkg="movel_flexbe" type="flexbe_msg_republisher.py" name="flexbe_msg_republisher" output="screen"/>
+
 </launch>

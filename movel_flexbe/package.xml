@@ -11,6 +11,7 @@
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
+  <depend>flexbe_msgs</depend>
   <depend>flexbe_behavior_engine</depend>
 
   <export>

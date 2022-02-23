@@ -8,8 +8,12 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
+from flexbe_states.check_condition_state import CheckConditionState
 from flexbe_states.log_state import LogState
+from flexbe_states.subscriber_state import SubscriberState
+from flexbe_states.wait_state import WaitState
 from movel_flexbe_states.seirios_run_path_state import SeiriosRunPathState
+from movel_flexbe_states.seirios_run_trail_state import SeiriosRunTrailState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -31,9 +35,6 @@ class movel_pathSM(Behavior):
 		self.name = 'movel_path'
 
 		# parameters of this behavior
-		self.add_parameter('path_name', '')
-		self.add_parameter('linear_velocity', 0.2)
-		self.add_parameter('angular_velocity', 0.2)
 
 		# references to used behaviors
 
@@ -47,7 +48,7 @@ class movel_pathSM(Behavior):
 
 
 	def create(self):
-		# x:754 y:49, x:750 y:160
+		# x:865 y:216, x:874 y:52
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 
 		# Additional creation code can be added inside the following tags
@@ -59,27 +60,53 @@ class movel_pathSM(Behavior):
 		with _state_machine:
 			# x:91 y:39
 			OperatableStateMachine.add('start_log',
-										LogState(text="Executing path " + self.path_name, severity=Logger.REPORT_HINT),
-										transitions={'done': 'execute_path'},
+										LogState(text='Executing path', severity=Logger.REPORT_HINT),
+										transitions={'done': 'wait_1'},
 										autonomy={'done': Autonomy.Off})
 
-			# x:527 y:153
+			# x:419 y:55
+			OperatableStateMachine.add('execute_path',
+										SeiriosRunPathState(path_name='PATH_28-01-22_01', linear_vel=0.2, angular_vel=0.2),
+										transitions={'arrived': 'finished', 'failed': 'failed_log'},
+										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off})
+
+			# x:636 y:44
 			OperatableStateMachine.add('failed_log',
-										LogState(text="Path failed", severity=Logger.REPORT_HINT),
+										LogState(text='Path failed', severity=Logger.REPORT_HINT),
 										transitions={'done': 'failed'},
 										autonomy={'done': Autonomy.Off})
 
-			# x:524 y:46
+			# x:411 y:231
+			OperatableStateMachine.add('subscriber_1',
+										SubscriberState(topic='/repeat_path', blocking=True, clear=True),
+										transitions={'received': 'conditional', 'unavailable': 'failed'},
+										autonomy={'received': Autonomy.Off, 'unavailable': Autonomy.Off},
+										remapping={'message': 'message'})
+
+			# x:422 y:352
 			OperatableStateMachine.add('success_log',
-										LogState(text="Path succeeded", severity=Logger.REPORT_HINT),
+										LogState(text='Path succeeded', severity=Logger.REPORT_HINT),
 										transitions={'done': 'finished'},
 										autonomy={'done': Autonomy.Off})
 
-			# x:274 y:39
-			OperatableStateMachine.add('execute_path',
-										SeiriosRunPathState(path_name=self.path_name, linear_vel=self.linear_velocity, angular_vel=self.angular_velocity),
-										transitions={'arrived': 'success_log', 'failed': 'failed_log'},
+			# x:422 y:134
+			OperatableStateMachine.add('trail',
+										SeiriosRunTrailState(trail_name='TRAIL_23-02-22_01', linear_vel=0.3, angular_vel=0.3),
+										transitions={'arrived': 'failed', 'failed': 'finished'},
 										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off})
+
+			# x:240 y:41
+			OperatableStateMachine.add('wait_1',
+										WaitState(wait_time=5.0),
+										transitions={'done': 'trail'},
+										autonomy={'done': Autonomy.Off})
+
+			# x:195 y:234
+			OperatableStateMachine.add('conditional',
+										CheckConditionState(predicate=lambda x:x.data==True),
+										transitions={'true': 'start_log', 'false': 'success_log'},
+										autonomy={'true': Autonomy.Off, 'false': Autonomy.Off},
+										remapping={'input_value': 'message'})
 
 
 		return _state_machine

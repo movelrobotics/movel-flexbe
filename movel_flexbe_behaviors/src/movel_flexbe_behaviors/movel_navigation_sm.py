@@ -10,6 +10,7 @@
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
 from flexbe_states.log_state import LogState
 from movel_flexbe_states.seirios_run_navigation_state import SeiriosRunNavigationState
+from movel_flexbe_states.seirios_run_waypoint_state import SeiriosRunWaypointState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -31,9 +32,6 @@ class movel_navigationSM(Behavior):
 		self.name = 'movel_navigation'
 
 		# parameters of this behavior
-		self.add_parameter('goal_name', '')
-		self.add_parameter('linear_velocity', 0.2)
-		self.add_parameter('angular_velocity', 0.2)
 
 		# references to used behaviors
 
@@ -59,13 +57,13 @@ class movel_navigationSM(Behavior):
 		with _state_machine:
 			# x:73 y:29
 			OperatableStateMachine.add('start_log',
-										LogState(text="Starting navigation to " + self.goal_name, severity=Logger.REPORT_HINT),
-										transitions={'done': 'navigation'},
+										LogState(text="Starting navigation to Goal", severity=Logger.REPORT_HINT),
+										transitions={'done': 'waypoint'},
 										autonomy={'done': Autonomy.Off})
 
 			# x:258 y:27
 			OperatableStateMachine.add('navigation',
-										SeiriosRunNavigationState(goal_name=self.goal_name, linear_vel=self.linear_velocity, angular_vel=self.angular_velocity),
+										SeiriosRunNavigationState(goal_name='WAYPOINT_23-02-22_01', linear_vel=0.2, angular_vel=0.2),
 										transitions={'arrived': 'success_log', 'failed': 'failed_log'},
 										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off})
 
@@ -74,6 +72,12 @@ class movel_navigationSM(Behavior):
 										LogState(text="Navigation succeeded", severity=Logger.REPORT_HINT),
 										transitions={'done': 'finished'},
 										autonomy={'done': Autonomy.Off})
+
+			# x:266 y:118
+			OperatableStateMachine.add('waypoint',
+										SeiriosRunWaypointState(waypoint_name='WAYPOINT_23-02-22_02', linear_vel=0.3, angular_vel=0.3),
+										transitions={'arrived': 'success_log', 'failed': 'failed_log'},
+										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off})
 
 			# x:565 y:161
 			OperatableStateMachine.add('failed_log',

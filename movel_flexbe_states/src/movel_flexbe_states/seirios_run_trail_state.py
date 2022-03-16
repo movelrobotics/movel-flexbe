@@ -14,21 +14,23 @@ class SeiriosRunTrailState(EventState):
     """
     State for trail execution on seirios.
 
-    -- trail_name   string      Trail name.
-    -- linear_vel   float       Linear velocity.
-    -- angular_vel  float       Angular velocity.
+    -- trail_name               string      Trail name.
+    -- linear_vel               float       Linear velocity.
+    -- angular_vel              float       Angular velocity.
+    -- start_at_nearest_point   bool        Whether to start at nearest point.
 
     <= arrived                  Trail task succeeds, robot's arrived to the destination.
     <= failed                   Trail task fails.
     """
 
-    def __init__(self, trail_name, linear_vel, angular_vel):
+    def __init__(self, trail_name, linear_vel, angular_vel, start_at_nearest_point):
         """Constructor"""
         super(SeiriosRunTrailState, self).__init__(outcomes = ['arrived', 'failed'])
 
         self._trail_name = trail_name
         self._linear_vel = linear_vel
         self._angular_vel = angular_vel
+        self._start_at_nearest_point = start_at_nearest_point
 
         self._api_address = rospy.get_param('seirios_api/address')
         self._api_username = rospy.get_param('seirios_api/user/username')
@@ -122,23 +124,31 @@ class SeiriosRunTrailState(EventState):
         # construct task supervisor goal
         Logger.loghint('[%s] Constructing message and transmitting goal to task supervisor' % self.name)
 
+        self._task_supervisor_goal = RunTaskListGoal()
+
         # task 1: Goto first point
-        goto_task = Task()
-        goto_task.name = 'Goto'
-        goto_task.type = 3
-        goto_task.mapId = trail['mapId']
-        
-        goto_payload_dict = trail['poses'][0]
-        goto_payload_dict['from_map'] = goto_task.mapId
-        goto_payload_dict['to_map'] = goto_task.mapId
-        goto_payload_dict['velocity'] = {'linear_velocity': self._linear_vel, 'angular_velocity': self._angular_vel}
+        if not self._start_at_nearest_point:
+            goto_task = Task()
+            goto_task.name = 'Goto'
+            goto_task.type = 3
+            goto_task.mapId = trail['mapId']
+            
+            goto_payload_dict = {}
+            goto_payload_dict['path'] = []
 
-        goto_task.payload = json.dumps(goto_payload_dict)
+            goto_payload_dict['path'].append(trail['poses'][0])
+            goto_payload_dict['path'][0]['from_map'] = goto_task.mapId
+            goto_payload_dict['path'][0]['to_map'] = goto_task.mapId
+            goto_payload_dict['path'][0]['velocity'] = {'linear_velocity': self._linear_vel, 'angular_velocity': self._angular_vel}
 
-        goto_task.linear_velocity = self._linear_vel
-        goto_task.angular_velocity = self._angular_vel
+            goto_payload_dict['start_at_nearest_point'] = self._start_at_nearest_point
 
-        self._task_supervisor_goal.task_list.tasks.append(goto_task)
+            goto_task.payload = json.dumps(goto_payload_dict)
+
+            goto_task.linear_velocity = self._linear_vel
+            goto_task.angular_velocity = self._angular_vel
+
+            self._task_supervisor_goal.task_list.tasks.append(goto_task)
 
         # task 2: Execute trail
         trail_task = Task()
@@ -146,12 +156,16 @@ class SeiriosRunTrailState(EventState):
         trail_task.type = 6
         trail_task.mapId = trail['mapId']
 
-        trail_payload_dict = {'path': trail['poses']}
+        trail_payload_dict = {}
+
+        trail_payload_dict['path'] = trail['poses']
         for i in range(len(trail_payload_dict['path'])):
             trail_payload_dict['path'][i]['from_map'] = trail_task.mapId
             trail_payload_dict['path'][i]['to_map'] = trail_task.mapId
             trail_payload_dict['path'][i]['velocity'] = {'linear_velocity': self._linear_vel, 'angular_velocity': self._angular_vel}
         
+        trail_payload_dict['start_at_nearest_point'] = self._start_at_nearest_point
+
         trail_task.payload = json.dumps(trail_payload_dict)
 
         trail_task.linear_velocity = self._linear_vel

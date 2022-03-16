@@ -91,7 +91,7 @@ class movel_pathSM(Behavior):
 
 			# x:422 y:134
 			OperatableStateMachine.add('trail',
-										SeiriosRunTrailState(trail_name='TRAIL_23-02-22_01', linear_vel=0.3, angular_vel=0.3),
+										SeiriosRunTrailState(trail_name='TRAIL_23-02-22_01', linear_vel=0.3, angular_vel=0.3, start_at_nearest_point=False),
 										transitions={'arrived': 'failed', 'failed': 'finished'},
 										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off})
 

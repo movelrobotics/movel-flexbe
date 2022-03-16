@@ -112,7 +112,7 @@ class SeiriosRunPathState(EventState):
                 Logger.logerr('[%s] Cannot find path with name %s for this active map' % (self.name, self._path_name))
                 self._failed = True
                 return
-            
+
             path = filtered_paths[0]
         except requests.exceptions.RequestException as e:
             Logger.logerr('[%s] Failed to retrieve path data: %s' % (self.name, str(e)))
@@ -127,7 +127,7 @@ class SeiriosRunPathState(EventState):
         goto_task.name = 'Goto'
         goto_task.type = 3
         goto_task.mapId = path['mapId']
-        
+
         goto_payload_dict = path['path'][0]
         goto_payload_dict['from_map'] = goto_task.mapId
         goto_payload_dict['to_map'] = goto_task.mapId
@@ -149,7 +149,7 @@ class SeiriosRunPathState(EventState):
         for i in range(len(path_payload_dict['path'])):
             path_payload_dict['path'][i]['from_map'] = path_task.mapId
             path_payload_dict['path'][i]['to_map'] = path_task.mapId
-        
+
         path_task.payload = json.dumps(path_payload_dict)
 
         path_task.linear_velocity = self._linear_vel
@@ -163,7 +163,7 @@ class SeiriosRunPathState(EventState):
         except Exception as e:
             Logger.logerr('[%s] Unable to send task supervisor action goal:\n%s' % (self.name, str(e)))
             self._failed = True
-            
+
 
     def cancel_active_goals(self):
         if self._client.is_available(self._action_topic):
@@ -179,7 +179,7 @@ class SeiriosRunPathState(EventState):
 
     def on_stop(self):
         self.cancel_active_goals()
-    
+
 
     def on_pause(self):
         Logger.loginfo('[%s] State paused, stopping robot.' % self.name)

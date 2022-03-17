@@ -14,21 +14,23 @@ class SeiriosRunWaypointState(EventState):
     """
     State for waypoint navigation on seirios.
 
-    -- waypoint_name    string      Goal name.
-    -- linear_vel       float       Linear velocity.
-    -- angular_vel      float       Angular velocity.
+    -- waypoint_name            string      Waypoint name.
+    -- linear_vel               float       Linear velocity.
+    -- angular_vel              float       Angular velocity.
+    -- start_at_nearest_point   bool        Whether to start at nearest point.
 
     <= arrived                      Waypoint task succeeds, robot's arrived to the destination.
     <= failed                       Waypoint task fails.
     """
 
-    def __init__(self, waypoint_name, linear_vel, angular_vel):
+    def __init__(self, waypoint_name, linear_vel, angular_vel, start_at_nearest_point):
         """Constructor"""
         super(SeiriosRunWaypointState, self).__init__(outcomes = ['arrived', 'failed'])
 
         self._waypoint_name = waypoint_name
         self._linear_vel = linear_vel
         self._angular_vel = angular_vel
+        self._start_at_nearest_point = start_at_nearest_point
 
         self._api_address = rospy.get_param('seirios_api/address')
         self._api_username = rospy.get_param('seirios_api/user/username')
@@ -122,23 +124,29 @@ class SeiriosRunWaypointState(EventState):
         # construct task supervisor goal
         Logger.loghint('[%s] Constructing message and transmitting goal to task supervisor' % self.name)
 
-        for pose in waypoint['poses']:
-            ts_task = Task()
-            ts_task.name = 'Goto'
-            ts_task.type = 3
-            ts_task.mapId = waypoint['mapId']
-            
-            payload_dict = pose
-            payload_dict['from_map'] = ts_task.mapId
-            payload_dict['to_map'] = ts_task.mapId
-            payload_dict['velocity'] = {'linear_velocity': self._linear_vel, 'angular_velocity': self._angular_vel}
+        self._task_supervisor_goal = RunTaskListGoal()
 
-            ts_task.payload = json.dumps(payload_dict)
+        ts_task = Task()
+        ts_task.name = 'Goto'
+        ts_task.type = 3
+        ts_task.mapId = waypoint['mapId']
 
-            ts_task.linear_velocity = self._linear_vel
-            ts_task.angular_velocity = self._angular_vel
+        payload_dict = {}
 
-            self._task_supervisor_goal.task_list.tasks.append(ts_task)
+        payload_dict['path'] = waypoint['poses']
+        for i in range(len(payload_dict['path'])):
+            payload_dict['path'][i]['from_map'] = ts_task.mapId
+            payload_dict['path'][i]['to_map'] = ts_task.mapId
+            payload_dict['path'][i]['velocity'] = {'linear_velocity': self._linear_vel, 'angular_velocity': self._angular_vel}
+
+        payload_dict['start_at_nearest_point'] = self._start_at_nearest_point
+
+        ts_task.payload = json.dumps(payload_dict)
+
+        ts_task.linear_velocity = self._linear_vel
+        ts_task.angular_velocity = self._angular_vel
+
+        self._task_supervisor_goal.task_list.tasks.append(ts_task)
 
         # Send the action goal for execution
         try:

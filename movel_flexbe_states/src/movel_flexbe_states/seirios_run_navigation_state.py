@@ -36,7 +36,7 @@ class SeiriosRunNavigationState(EventState):
 
         self._action_topic = '/task_supervisor'
         self._client = ProxyActionClient({self._action_topic: RunTaskListAction})
-        
+
         self._pub = ProxyPublisher({'/task_supervisor/pause': Bool})
 
         self._completed = False
@@ -89,7 +89,7 @@ class SeiriosRunNavigationState(EventState):
                 Logger.logerr('[%s] Unexpected response when requesting goal list: %d' % (self.name, goals_resp.status_code))
                 self._failed = True
                 return
-            
+
             bot_resp = requests.get('http://%s/api/v1/bot/detail' % self._api_address, headers={'authorization':token})
             bot_resp.raise_for_status()
 
@@ -112,7 +112,7 @@ class SeiriosRunNavigationState(EventState):
                 Logger.logerr('[%s] Cannot find goal with name %s for this active map' % (self.name, self._goal_name))
                 self._failed = True
                 return
-            
+
             goal = filtered_goals[0]
         except requests.exceptions.RequestException as e:
             Logger.logerr('[%s] Failed to retrieve goal data: %s' % (self.name, str(e)))
@@ -126,7 +126,7 @@ class SeiriosRunNavigationState(EventState):
         ts_task.name = 'Goto'
         ts_task.type = 3
         ts_task.mapId = goal['mapId']
-        
+
         payload_dict = goal['goal']
         payload_dict['from_map'] = ts_task.mapId
         payload_dict['to_map'] = ts_task.mapId
@@ -144,7 +144,7 @@ class SeiriosRunNavigationState(EventState):
         except Exception as e:
             Logger.logerr('[%s] Unable to send task supervisor action goal:\n%s' % (self.name, str(e)))
             self._failed = True
-            
+
 
     def cancel_active_goals(self):
         if self._client.is_available(self._action_topic):
@@ -160,7 +160,7 @@ class SeiriosRunNavigationState(EventState):
 
     def on_stop(self):
         self.cancel_active_goals()
-    
+
 
     def on_pause(self):
         Logger.loginfo('[%s] State paused, stopping robot.' % self.name)

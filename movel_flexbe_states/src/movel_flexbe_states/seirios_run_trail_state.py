@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 from flexbe_core import EventState, Logger
-from flexbe_core.proxy import ProxyActionClient, ProxyPublisher
+from flexbe_core.proxy import ProxyActionClient, ProxyPublisher, ProxyServiceCaller
 
 from actionlib_msgs.msg import GoalStatus
 from movel_seirios_msgs.msg import RunTaskListGoal, RunTaskListAction, Task
 from std_msgs.msg import Bool
+from std_srvs.srv import SetBool, SetBoolRequest
 import json
 import requests
 import rospy
@@ -18,12 +19,13 @@ class SeiriosRunTrailState(EventState):
     -- linear_vel               float       Linear velocity.
     -- angular_vel              float       Angular velocity.
     -- start_at_nearest_point   bool        Whether to start at nearest point.
+    -- enable_velocity_limiter  bool        Whether to enable velocity limiter.
 
     <= arrived                  Trail task succeeds, robot's arrived to the destination.
     <= failed                   Trail task fails.
     """
 
-    def __init__(self, trail_name, linear_vel, angular_vel, start_at_nearest_point):
+    def __init__(self, trail_name, linear_vel, angular_vel, start_at_nearest_point=False, enable_velocity_limiter=False):
         """Constructor"""
         super(SeiriosRunTrailState, self).__init__(outcomes = ['arrived', 'failed'])
 
@@ -31,6 +33,7 @@ class SeiriosRunTrailState(EventState):
         self._linear_vel = linear_vel
         self._angular_vel = angular_vel
         self._start_at_nearest_point = start_at_nearest_point
+        self._enable_velocity_limiter = enable_velocity_limiter
 
         self._api_address = rospy.get_param('seirios_api/address')
         self._api_username = rospy.get_param('seirios_api/user/username')
@@ -38,6 +41,8 @@ class SeiriosRunTrailState(EventState):
 
         self._action_topic = '/task_supervisor'
         self._client = ProxyActionClient({self._action_topic: RunTaskListAction})
+
+        self._srv_caller = ProxyServiceCaller({'/enable_velocity_limiter': SetBool})
 
         self._pub = ProxyPublisher({'/task_supervisor/pause': Bool})
 
@@ -122,7 +127,7 @@ class SeiriosRunTrailState(EventState):
             return
 
         # construct task supervisor goal
-        Logger.loghint('[%s] Constructing message and transmitting goal to task supervisor' % self.name)
+        Logger.loghint('[%s] Constructing goal' % self.name)
 
         self._task_supervisor_goal = RunTaskListGoal()
 
@@ -173,8 +178,22 @@ class SeiriosRunTrailState(EventState):
 
         self._task_supervisor_goal.task_list.tasks.append(trail_task)
 
+        # Enable/disable velocity limiter based on input parameter
+        try:
+            if self._enable_velocity_limiter:
+                Logger.loghint('[%s] Enabling velocity limiter' % self.name)
+            else:
+                Logger.loghint('[%s] Disabling velocity limiter' % self.name)
+            velo_limiter_req = SetBoolRequest()
+            velo_limiter_req.data = self._enable_velocity_limiter
+            velo_limiter_resp = self._srv_caller.call('/enable_velocity_limiter', velo_limiter_req)
+        except Exception as e:
+            Logger.logerr('[%s] Unable to set velocity limiter:\n%s' % (self.name, str(e)))
+            self._failed = True
+
         # Send the action goal for execution
         try:
+            Logger.loghint('[%s] Transmitting goal to task supervisor' % self.name)
             self._client.send_goal(self._action_topic, self._task_supervisor_goal)
         except Exception as e:
             Logger.logerr('[%s] Unable to send task supervisor action goal:\n%s' % (self.name, str(e)))
@@ -191,11 +210,29 @@ class SeiriosRunTrailState(EventState):
 
     def on_exit(self, userdata):
         self.cancel_active_goals()
+        # Disable velocity limiter
+        try:
+            Logger.loghint('[%s] Disabling velocity limiter' % self.name)
+            velo_limiter_req = SetBoolRequest()
+            velo_limiter_req.data = False
+            velo_limiter_resp = self._srv_caller.call('/enable_velocity_limiter', velo_limiter_req)
+        except Exception as e:
+            Logger.logerr('[%s] Unable to set velocity limiter:\n%s' % (self.name, str(e)))
+            self._failed = True
 
 
     def on_stop(self):
         self.cancel_active_goals()
-    
+        # Disable velocity limiter
+        try:
+            Logger.loghint('[%s] Disabling velocity limiter' % self.name)
+            velo_limiter_req = SetBoolRequest()
+            velo_limiter_req.data = False
+            velo_limiter_resp = self._srv_caller.call('/enable_velocity_limiter', velo_limiter_req)
+        except Exception as e:
+            Logger.logerr('[%s] Unable to set velocity limiter:\n%s' % (self.name, str(e)))
+            self._failed = True
+
 
     def on_pause(self):
         Logger.loginfo('[%s] State paused, stopping robot.' % self.name)

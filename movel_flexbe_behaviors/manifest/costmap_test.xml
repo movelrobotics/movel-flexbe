@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="costmap_test">
+
+	<executable package_path="movel_flexbe_behaviors.costmap_test_sm" class="costmap_testSM" />
+	<tagstring>test</tagstring>
+	<author>test</author>
+	<date>Wed Jun 29 2022</date>
+	<description>
+		test
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

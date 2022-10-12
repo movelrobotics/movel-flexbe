@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="test_flexbe">
+
+	<executable package_path="movel_flexbe_behaviors.test_flexbe_sm" class="test_flexbeSM" />
+	<tagstring>test</tagstring>
+	<author>asdf</author>
+	<date>Thu Sep 29 2022</date>
+	<description>
+		asdf
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

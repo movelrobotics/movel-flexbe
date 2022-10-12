@@ -90,7 +90,7 @@ class SeiriosRunNavigationState(EventState):
                 self._failed = True
                 return
 
-            bot_resp = requests.get('http://%s/api/v1/bot/detail' % self._api_address, headers={'authorization':token})
+            bot_resp = requests.get('http://%s/api/v1/bot/details' % self._api_address, headers={'authorization':token})
             bot_resp.raise_for_status()
 
             if bot_resp.status_code != 200:

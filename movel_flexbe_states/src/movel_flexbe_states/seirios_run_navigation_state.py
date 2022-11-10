@@ -12,6 +12,7 @@ import rospy
 
 class SeiriosRunNavigationState(EventState):
     """
+    *WARNING* This state is deprecated in favour of SeiriosRunWaypointState. Use that state instead.
     State for single point navigation on seirios.
 
     -- goal_name    string      Goal name.

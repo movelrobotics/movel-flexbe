@@ -44,7 +44,7 @@ class costmap_testSM(Behavior):
 
 
 	def create(self):
-		# x:443 y:125, x:130 y:365
+		# x:443 y:125, x:438 y:237
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 
 		# Additional creation code can be added inside the following tags
@@ -56,15 +56,15 @@ class costmap_testSM(Behavior):
 		with _state_machine:
 			# x:191 y:185
 			OperatableStateMachine.add('dyn',
-										DynamicReconfigureState(parameter_dict={"footprint": [[0.135,0.135],[0.135,-0.135],[-0.135,-0.135],[-0.135,0.135]]}, reconfigure_node="/move_base/global_costmap"),
-										transitions={'done': 'finished'},
-										autonomy={'done': Autonomy.Off})
+										DynamicReconfigureState(reconfigure_namespace="/move_base/global_costmap", parameter_dict={"footprint": [[0.135,0.135],[0.135,-0.135],[-0.135,-0.135],[-0.135,0.135]]}),
+										transitions={'done': 'finished', 'failed': 'failed'},
+										autonomy={'done': Autonomy.Off, 'failed': Autonomy.Off})
 
 			# x:173 y:100
 			OperatableStateMachine.add('costmap',
-										ToggleCostmapLayerState(layer="/obstacle_layer", enable=True, costmap_node="/move_base/local_costmap"),
-										transitions={'done': 'finished'},
-										autonomy={'done': Autonomy.Off})
+										ToggleCostmapLayerState(costmap_name="/move_base/global_costmap", layer="static_layer", enable=True),
+										transitions={'done': 'finished', 'failed': 'failed'},
+										autonomy={'done': Autonomy.Off, 'failed': Autonomy.Off})
 
 
 		return _state_machine

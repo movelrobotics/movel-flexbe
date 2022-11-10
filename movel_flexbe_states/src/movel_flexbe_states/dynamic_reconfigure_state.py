@@ -5,31 +5,32 @@ import rospy
 
 class DynamicReconfigureState(EventState):
     '''
-    Publishes a mutex area tb_agv_msgs/Mutex message on a given topic name.
+    Modify parameter values at runtime with Dynamic Reconfigure (only for parameters with Dynamic Reconfigure enabled).
 
-    -- parameter_dict       dict    The dynamically-reconfigurable parameter and value pairs.
+    -- reconfigure_namespace    string  The namespace in which the parameter is located.
+    -- parameter_dict           dict    The dynamically-reconfigurable parameter and value pairs.
 
-    -- reconfigure_node     string  The node where the parameter is used.
-
-    <= done Done.
+    <= done     Done.
+    <= failed   Failed.
     '''
 
-    def __init__(self, parameter_dict, reconfigure_node):
-        super(DynamicReconfigureState, self).__init__(outcomes=["done"])
-        self._reconfigure_node = reconfigure_node.rstrip("/")
+    def __init__(self, reconfigure_namespace, parameter_dict):
+        super(DynamicReconfigureState, self).__init__(outcomes=["done", "failed"])
+        self._reconfigure_namespace = reconfigure_namespace.rstrip("/")
         self._parameter_dict = parameter_dict
         self._updated = False
 
     def execute(self, userdata):
-        Logger.loghint("[{}] Updating parameters at node {}: {}".format(self.name, self._reconfigure_node, self._parameter_dict))
+        Logger.loghint("[{}] Updating parameters in namespace {}: {}".format(self.name, self._reconfigure_namespace, self._parameter_dict))
 
-        client = dynamic_reconfigure.client.Client(self._reconfigure_node, timeout=30, config_callback=self.callback)
-        client.update_configuration(self._parameter_dict)
+        try:
+            client = dynamic_reconfigure.client.Client(self._reconfigure_namespace, timeout=5, config_callback=self.callback)
+            client.update_configuration(self._parameter_dict)
+        except Exception as e:
+            Logger.logerr("[%s] Error: %s" % (self.name, e))
+            return 'failed'
 
-        while not self._updated:
-            rospy.sleep(0.1)
-
-        Logger.loghint("[%s] Successfully updating parameters." % (self.name))
+        Logger.loghint("[%s] Parameters successfully updated." % (self.name))
 
         return "done"
 

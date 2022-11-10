@@ -30,6 +30,7 @@ class test_flexbeSM(Behavior):
 		self.name = 'test_flexbe'
 
 		# parameters of this behavior
+		self.add_parameter('efawer', 0)
 
 		# references to used behaviors
 
@@ -43,8 +44,10 @@ class test_flexbeSM(Behavior):
 
 
 	def create(self):
+		ggg = 11
 		# x:373 y:125, x:130 y:365
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
+		_state_machine.userdata.dfsd = 23
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]

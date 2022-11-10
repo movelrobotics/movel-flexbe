@@ -75,7 +75,7 @@ class movel_navigationSM(Behavior):
 
 			# x:266 y:118
 			OperatableStateMachine.add('waypoint',
-										SeiriosRunWaypointState(waypoint_name='CENTER_LOOP', linear_vel=0.3, angular_vel=0.3, start_at_nearest_point=False),
+										SeiriosRunWaypointState(waypoint_name='WAYPOINT_20-09-22_01', linear_vel=0.3, angular_vel=0.3, start_at_nearest_point=False, enable_velocity_limiter=False),
 										transitions={'arrived': 'success_log', 'failed': 'failed_log'},
 										autonomy={'arrived': Autonomy.Off, 'failed': Autonomy.Off})
 

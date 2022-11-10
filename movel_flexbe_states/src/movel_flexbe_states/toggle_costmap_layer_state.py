@@ -5,31 +5,36 @@ import rospy
 
 class ToggleCostmapLayerState(EventState):
     '''
-    Publishes a mutex area tb_agv_msgs/Mutex message on a given topic name.
+    Toggle costmap layer on or off.
 
-    -- costmap_node string The costmap publishing node.
+    -- costmap_name string  The costmap name.
+    -- layer        string  Costmap layer to be enabled/disabled.
+    -- enable       bool    Enable or disable costmap layer.
 
-    -- layer string Costmap layer to be enabled/disabled.
-   
-    -- enable    bool                Enable or disable costmap layer  
-
-    <= done Done.
+    <= done     Done.
+    <= failed   Failed.
     '''
 
-    def __init__(self, layer, enable, costmap_node="/move_base/local_costmap"):
-        super(ToggleCostmapLayerState, self).__init__(outcomes=['done'])
-        self._costmap_node = costmap_node.rstrip("/")
+    def __init__(self, costmap_name, layer, enable):
+        super(ToggleCostmapLayerState, self).__init__(outcomes=['done', 'failed'])
+        self._costmap_name = costmap_name.rstrip("/")
         self._layer = layer
         self._enable = enable
         self._updated = False
 
 
     def execute(self, userdata):
-        client = dynamic_reconfigure.client.Client(self._costmap_node + "/" + self._layer, timeout=30, config_callback=self.callback)
-        client.update_configuration({"enabled": self._enable})
+        if self._enable:
+            Logger.loghint("[%s] Enabling layer %s at costmap %s" % (self.name, self._layer, self._costmap_name))
+        else:
+            Logger.loghint("[%s] Disabling layer %s at costmap %s" % (self.name, self._layer, self._costmap_name))
 
-        while not self._updated:
-            rospy.sleep(0.05)
+        try:
+            client = dynamic_reconfigure.client.Client(self._costmap_name + "/" + self._layer, timeout=5, config_callback=self.callback)
+            client.update_configuration({"enabled": self._enable})
+        except Exception as e:
+            Logger.logerr("[%s] Error: %s" % (self.name, e))
+            return 'failed'
 
         if self._enable:
             Logger.loghint("[%s] Costmap layer enabled!" % self.name)

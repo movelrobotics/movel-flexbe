@@ -8,7 +8,7 @@ This repo contains FlexBE states for executing Seirios RNS tasks, example behavi
 $ cd your_flexbe_workspace/src
 $ git clone https://gitlab.com/movelai_public/movel_flexbe.git
 ```
-2. As a dependency for this stack, you also need to have movel_seirios_msgs pacakge installed.
+2. As a dependency for this stack, you also need to have [movel_seirios_msgs](https://gitlab.com/movelai_public/movel_seirios_msgs) pacakge installed.
 3. Build the workspace.
 
 ## Usage
@@ -37,3 +37,6 @@ user:                       # Seirios RNS username for API access
   username: "movel_flexbe"
   password: "movel_flexbe"
 ```
+
+## Available States
+Details of available states are provided [here](movel_flexbe_states).

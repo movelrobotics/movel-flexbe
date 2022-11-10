@@ -12,6 +12,7 @@ import rospy
 
 class SeiriosRunPathState(EventState):
     """
+    *WARNING* This state is deprecated in favour of SeiriosRunTrailState. Use that state instead.
     State for path execution on seirios.
 
     -- path_name    string      Path name.

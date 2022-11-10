@@ -6,7 +6,7 @@ Contains flexbe states for executing Seirios RNS tasks.
 ### `SeiriosRunWaypointState`
 State for waypoint navigation on seirios. Make sure the correct map that contains waypoint is loaded.
 
-#### Parameters
+**Parameters**  
 | Parameter Name            | Type   | Description                                          |
 |---------------------------|--------|------------------------------------------------------|
 | `waypoint_name`           | string | Waypoint name. Make sure waypoint exists in the map. |
@@ -15,13 +15,13 @@ State for waypoint navigation on seirios. Make sure the correct map that contain
 | `start_at_nearest_point`  | bool   | Whether to start task at nearest point.              |
 | `enable_velocity_limiter` | bool   | Whether to enable velocity limiter.                  |
 
-#### Input Key
+**Input Key**  
 N/A
 
-#### Output Key
+**Output Key**  
 N/A
 
-#### Outcome
+**Outcome**  
 | Outcome   | Description                                                 |
 |-----------|-------------------------------------------------------------|
 | `arrived` | Waypoint task succeeds, robot's arrived to the destination. |
@@ -30,7 +30,7 @@ N/A
 ### `SeiriosRunTrailState`
 State for trail execution on seirios. Make sure the correct map that contains trail is loaded.
 
-#### Parameters
+**Parameters**  
 | Parameter Name            | Type   | Description                                    |
 |---------------------------|--------|------------------------------------------------|
 | `trail_name`              | string | Trail name. Make sure trail exists in the map. |
@@ -39,13 +39,13 @@ State for trail execution on seirios. Make sure the correct map that contains tr
 | `start_at_nearest_point`  | bool   | Whether to start task at nearest point.        |
 | `enable_velocity_limiter` | bool   | Whether to enable velocity limiter.            |
 
-#### Input Key
+**Input Key**  
 N/A
 
-#### Output Key
+**Output Key**  
 N/A
 
-#### Outcome
+**Outcome**  
 | Outcome   | Description                                              |
 |-----------|----------------------------------------------------------|
 | `arrived` | Trail task succeeds, robot's arrived to the destination. |
@@ -54,19 +54,19 @@ N/A
 ### `DynamicReconfigureState`
 Modify parameter values at runtime with Dynamic Reconfigure (only for parameters with Dynamic Reconfigure enabled).
 
-#### Parameters
+**Parameters**  
 | Parameter Name          | Type   | Description                                                                                                                                                                       |
 |-------------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `reconfigure_namespace` | string | The namespace in which the parameter is located. For example, if we have rosparams `/my_node/my_params/A` and `/my_node/my_params/B`, the namespace will be `/my_node/my_params`. |
 | `parameter_dict`        | dict   | The dynamically-reconfigurable parameter and value pairs. From the previous example, `parameter_dict` will be, for example, `{"A": 0.5, "B": True}`.                              |
 
-#### Input Key
+**Input Key**  
 N/A
 
-#### Output Key
+**Output Key**  
 N/A
 
-#### Outcome
+**Outcome**  
 | Outcome  | Description                                               |
 |----------|-----------------------------------------------------------|
 | `done`   | Dynamic reconfigure done; parameter successfully updated. |
@@ -75,25 +75,27 @@ N/A
 ### `ToggleCostmapLayerState`
 Toggle costmap layer on or off.
 
-#### Parameters
+**Parameters**  
 | Parameter Name | Type   | Description                                                           |
 |----------------|--------|-----------------------------------------------------------------------|
 | `costmap_name` | string | The costmap name. For example, `/move_base/local_costmap`.            |
 | `layer`        | string | Costmap layer to be enabled/disabled. For example, `inflation_layer`. |
 | `enable`       | bool   | Enable or disable costmap layer.                                      |
 
-#### Input Key
+**Input Key**  
 N/A
 
-#### Output Key
+**Output Key**  
 N/A
 
-#### Outcome
+**Outcome**  
 | Outcome  | Description                                  |
 |----------|----------------------------------------------|
 | `done`   | Costmap layer successfully enabled/disabled. |
 | `failed` | Failed to enable/disable costmap layer.      |
 
 ## Deprecated States
-- `SeiriosRunNavigationState`. Deprecated in favour of `SeiriosRunWaypointState`. Use that state instead.
-- `SeiriosRunPathState`. Deprecated in favour of `SeiriosRunTrailState`. Use that state instead.
+- `SeiriosRunNavigationState`  
+Deprecated in favour of [`SeiriosRunWaypointState`](#seiriosrunwaypointstate). Use that state instead.
+- `SeiriosRunPathState`  
+Deprecated in favour of [`SeiriosRunTrailState`](#seiriosruntrailstate). Use that state instead.
